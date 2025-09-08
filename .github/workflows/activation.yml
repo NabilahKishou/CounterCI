@@ -2,6 +2,9 @@ name: Get Unity license activation file 🔐
 
 on: workflow_dispatch
 
+env: 
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+
 jobs:
   checkLicense:
     name: Check for the Unity license
