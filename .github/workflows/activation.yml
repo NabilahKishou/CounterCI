@@ -3,11 +3,9 @@ name: Get Unity license activation file 🔐
 on: workflow_dispatch
 
 jobs:
-  activateLicense:
-    name: Activate Unity licensing 🔑
+  checkLicense:
+    name: Check for the Unity license
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
+    steps: 
       - name: Unity - Activate
         uses: game-ci/unity-activate@v2.0.0
