@@ -10,11 +10,11 @@ jobs:
     name: Check for the Unity license
     runs-on: ubuntu-latest
     steps:
-      - name: Fail - No license
-        if: ${{!startsWith(env.UNITY_LICENSE, '<')}}
-        run: exit 1
+      - name: Unity - Activate
+        uses: game-ci/unity-activate@v2.0.0
   
   testRunner:
+    needs: checkLicense
     name: Test in ${{ matrix.testMode }} ✨
     runs-on: ubuntu-latest
     strategy:
