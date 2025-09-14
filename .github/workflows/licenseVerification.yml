@@ -4,7 +4,7 @@ on:
   workflow_dispatch
 
 jobs:
-  Verify Unity License:
+  verifyUnityLicense:
     runs-on: ubuntu-latest
 
     steps:
@@ -29,10 +29,41 @@ jobs:
           fi
           echo "✅ Unity secrets are set"
 
+      # Find correct UnityCI Docker image variant
+      - name: Resolve Supported UnityCI Image
+        id: resolved_version
+        run: |
+          REQ_VERSION="${{ steps.unity_version.outputs.unity_version }}"
+          echo "ℹ️ Looking for UnityCI docker images for $REQ_VERSION..."
+
+          # Query Docker Hub for all tags containing the requested version
+          AVAILABLE=$(curl -s "https://hub.docker.com/v2/repositories/unityci/editor/tags?page_size=200" \
+            | jq -r '.results[].name' | grep "$REQ_VERSION" || true)
+
+          if [ -z "$AVAILABLE" ]; then
+            echo "❌ No UnityCI image found for $REQ_VERSION"
+            exit 1
+          fi
+
+          echo "✅ Found available images:"
+          echo "$AVAILABLE"
+
+          # Pick linux-il2cpp variant if available, else fallback to base
+          if echo "$AVAILABLE" | grep -q "linux-il2cpp"; then
+            RESOLVED=$(echo "$AVAILABLE" | grep "linux-il2cpp" | head -n1)
+          else
+            RESOLVED=$(echo "$AVAILABLE" | head -n1)
+          fi
+
+          echo "👉 Using image: $RESOLVED"
+          echo "resolved_version=$RESOLVED" >> $GITHUB_OUTPUT
+
+
       # Activate Unity with provided license
       - name: Unity - Activate
         uses: game-ci/unity-activate@v2.0.0
         with:
+          unityVersion: ${{ steps.resolved_version.outputs.resolved_version }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
