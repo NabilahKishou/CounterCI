@@ -34,6 +34,6 @@ jobs:
         uses: game-ci/unity-activate@v2
         with:
           unityVersion: 2022.3.50f1
-          email: ${{ secrets.UNITY_EMAIL }}
-          password: ${{ secrets.UNITY_PASSWORD }}
-          license: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
