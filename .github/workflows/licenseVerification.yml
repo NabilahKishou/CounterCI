@@ -1,39 +1,32 @@
-name: Unity License Verification
+name: Verify Unity License
 
 on:
-  workflow_dispatch
+  workflow_dispatch:  # run manually
 
 jobs:
-  verifyUnityLicense:
+  verify-unity-license:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Validate Unity Secrets exist
-      - name: Verify Unity Secrets
+      - name: Detect Unity Version
+        id: unity_version
         run: |
-          if [ -z "${{ secrets.UNITY_EMAIL }}" ]; then
-            echo "❌ UNITY_EMAIL is missing in GitHub secrets"
+          FILE="ProjectSettings/ProjectVersion.txt"
+          if [ ! -f "$FILE" ]; then
+            echo "❌ ProjectVersion.txt not found"
             exit 1
           fi
-          if [ -z "${{ secrets.UNITY_PASSWORD }}" ]; then
-            echo "❌ UNITY_PASSWORD is missing in GitHub secrets"
-            exit 1
-          fi
-          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
-            echo "❌ UNITY_LICENSE is missing in GitHub secrets"
-            exit 1
-          fi
-          echo "✅ Unity secrets are set"
+          VERSION=$(grep '^m_EditorVersion:' "$FILE" | sed -E 's/^m_EditorVersion:\s*//')
+          echo "Unity version detected: $VERSION"
+          echo "unity_version=$VERSION" >> $GITHUB_OUTPUT
 
-      # Activate Unity with provided license
-      - name: Unity - Activate
-        uses: game-ci/unity-activate@v2.0.0
+      - name: Verify Unity License
+        uses: game-ci/unity-activate@v2
         with:
-          unityVersion: 2022.3.50f1
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          unityVersion: ${{ steps.unity_version.outputs.unity_version }}
+          email: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+          license: ${{ secrets.UNITY_LICENSE }}
