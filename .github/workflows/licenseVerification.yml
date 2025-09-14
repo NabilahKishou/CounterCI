@@ -1,11 +1,39 @@
-name: Verify license activation
+name: Unity License Verification
 
-on: workflow_dispatch
+on:
+  workflow_dispatch
 
 jobs:
-  checkLicense:
-    name: Check for the Unity license
+  verify-unity-license:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Unity - Activate
-        uses: game-ci/unity-activate@v2.0.0
+
+    steps:
+      # Checkout repository
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Validate Unity Secrets exist
+      - name: Verify Unity Secrets
+        run: |
+          if [ -z "${{ secrets.UNITY_EMAIL }}" ]; then
+            echo "❌ UNITY_EMAIL is missing in GitHub secrets"
+            exit 1
+          fi
+          if [ -z "${{ secrets.UNITY_PASSWORD }}" ]; then
+            echo "❌ UNITY_PASSWORD is missing in GitHub secrets"
+            exit 1
+          fi
+          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
+            echo "❌ UNITY_LICENSE is missing in GitHub secrets"
+            exit 1
+          fi
+          echo "✅ Unity secrets are set"
+
+      # Activate Unity with provided license
+      - name: Activate Unity License
+        uses: game-ci/unity-activate@v2
+        with:
+          unityVersion: 2022.3.50f1
+          email: ${{ secrets.UNITY_EMAIL }}
+          password: ${{ secrets.UNITY_PASSWORD }}
+          license: ${{ secrets.UNITY_LICENSE }}
