@@ -16,6 +16,9 @@ jobs:
   build:
     name: Build for ${{ inputs.platform }}
     runs-on: self-hosted
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
